@@ -17,7 +17,7 @@ service cloud.firestore {
     // --- Entity Validations ---
     function isValidProfile(data) {
       return data.keys().hasAll(['id', 'name', 'email', 'role', 'isVouched', 'rating', 'createdAt']) &&
-             data.keys().size() <= 15 &&
+             data.keys().size() <= 25 &&
              data.id == request.auth.uid &&
              data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
              data.email is string && data.email.size() > 0 && data.email.size() <= 150 &&
@@ -29,6 +29,7 @@ service cloud.firestore {
 
     function isValidJob(data) {
       return data.keys().hasAll(['id', 'title', 'description', 'budget', 'currency', 'companyName', 'postedAt', 'clientId']) &&
+             data.keys().size() <= 20 &&
              data.id is string && data.id.size() <= 128 &&
              data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
              data.description is string && data.description.size() > 0 && data.description.size() <= 5000 &&
@@ -62,7 +63,7 @@ service cloud.firestore {
                     incoming().role == existing().role &&
                     (
                       // Action: Edit Bio/Location/Skills
-                      (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'bio', 'location', 'skills', 'avatarUrl', 'voiceUrl']))
+                      (incoming().diff(existing()).affectedKeys().hasOnly(['name', 'bio', 'location', 'skills', 'avatarUrl', 'voiceUrl', 'experienceLevel', 'preferredProjectTypes', 'companyRegistrationNumber']))
                     );
     }
 
@@ -75,7 +76,7 @@ service cloud.firestore {
       allow update: if isVerified() && isOwner(existing().clientId) && 
                     isValidJob(incoming()) &&
                     incoming().clientId == existing().clientId &&
-                    (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'budget', 'currency', 'tags']));
+                    (incoming().diff(existing()).affectedKeys().hasOnly(['title', 'description', 'budget', 'currency', 'tags', 'requiredExperienceLevel']));
       
       allow delete: if isVerified() && isOwner(existing().clientId);
     }

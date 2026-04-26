@@ -1,14 +1,25 @@
 import { motion } from "motion/react";
-import { Mic, Globe, ShieldCheck, Wallet, PlayCircle, Star, Users, MessageSquare, ArrowLeft, ArrowRight, LogOut, User as UserIcon } from "lucide-react";
+import { Mic, Globe, ShieldCheck, Wallet, PlayCircle, Star, Users, MessageSquare, ArrowLeft, ArrowRight, LogOut, User as UserIcon, LayoutDashboard, BookOpen, Target, CheckCircle } from "lucide-react";
 import { useState } from "react";
 import { VoiceRecorder } from "./components/VoiceRecorder";
 import { DeveloperCard } from "./components/DeveloperCard";
 import { useAuth } from "./lib/AuthContext";
 import { signInWithGoogle, signOut } from "./lib/firebase";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
   const { user, profile, loading } = useAuth();
+  const navigate = useNavigate();
+
+  const handleAuth = async () => {
+    try {
+      await signInWithGoogle();
+      navigate('/dashboard');
+    } catch(err) {
+      console.error(err);
+    }
+  };
 
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-gray-100 fixed top-0 w-full z-50 overflow-hidden">
@@ -26,33 +37,24 @@ const Navbar = () => {
           <div className="w-10 h-10 rounded-full bg-gray-100 animate-pulse"></div>
         ) : user ? (
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <img 
-                src={user.photoURL || `https://ui-avatars.com/api/?name=${user.displayName}`} 
-                alt={user.displayName || ""} 
-                className="w-10 h-10 rounded-full border-2 border-indigo-100"
-                referrerPolicy="no-referrer"
-              />
-              <span className="hidden sm:inline font-bold text-gray-700">{user.displayName?.split(' ')[0]}</span>
-            </div>
-            <button 
-              onClick={signOut}
-              className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-              title="خروج"
+             <button 
+              onClick={() => navigate('/dashboard')}
+              className="px-4 py-2 bg-indigo-50 text-indigo-700 font-bold rounded-lg flex items-center gap-2 hover:bg-indigo-100 transition-colors"
             >
-              <LogOut className="w-5 h-5" />
+              <LayoutDashboard className="w-4 h-4" />
+              لوحة التحكم
             </button>
           </div>
         ) : (
           <>
             <button 
-              onClick={signInWithGoogle}
+              onClick={handleAuth}
               className="px-4 py-2 text-indigo-600 font-semibold hover:bg-indigo-50 rounded-lg transition-colors"
             >
               دخول
             </button>
             <button 
-              onClick={signInWithGoogle}
+              onClick={handleAuth}
               className="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95"
             >
               انضم إلينا
@@ -203,44 +205,71 @@ const DevelopersMarketplace = () => {
 const Features = () => {
   const list = [
     {
-      title: "معرض الأعمال الصوتي",
-      desc: "لا تكتفِ بالكتابة، سجل صوتك واشرح خبرتك بثقة لتصل إلى قلب العميل مباشرة.",
-      icon: <Mic className="w-8 h-8" />,
-      color: "bg-blue-500"
-    },
-    {
-      title: "الكفيل الرقمي",
-      desc: "نظام تزكية من كبار المبرمجين اليمنيين لبناء جسور الثقة مع الشركات العالمية.",
+      title: "نظام الكفيل الرقمي",
+      desc: "تحت إشراف كبار المبرمجين اليمنيين، نضمن جودة كودك ونوفر ضمانة تقنية تجذب كبار العملاء الدوليين.",
       icon: <ShieldCheck className="w-8 h-8" />,
-      color: "bg-purple-500"
+      color: "bg-purple-600",
+      badge: "Kafala System"
     },
     {
-      title: "دفع آمن ومحلي",
-      desc: "نسوي العقود دولياً ونحول مستحقاتك فوراً عبر 'حوِّل' ومحافظ اليمن المحلية.",
+      title: "الفرق الافتراضية",
+      desc: "نكون لك فريقاً متكاملاً (تصميم، برمجة، إدارة) لتنفيذ أضخم المشاريع الدولية التي كانت مستحيلة سابقاً.",
+      icon: <Users className="w-8 h-8" />,
+      color: "bg-blue-600",
+      badge: "Virtual Teams"
+    },
+    {
+      title: "أكاديمية يمن كودر",
+      desc: "تحديات برمجية أسبوعية تعمل حتى على أضعف سرعات الإنترنت، لتطوير مهاراتك والحصول على شهادات معتمدة.",
+      icon: <BookOpen className="w-8 h-8" />,
+      color: "bg-indigo-600",
+      badge: "Academy"
+    },
+    {
+      title: "دفع محلي مضمون",
+      desc: "استلم حقوقك فوراً بسعر صرف السوق العادل عبر 'حوِّل'. لا حاجة لـ PayPal أو تعقيدات البنوك.",
       icon: <Wallet className="w-8 h-8" />,
-      color: "bg-green-500"
+      color: "bg-green-600",
+      badge: "Instant Payout"
+    },
+    {
+      title: "المطابقة الذكية",
+      desc: "خوارزميات تحلل صوتك ومهاراتك لترشح لك فقط المشاريع التي تناسب شغفك ومستوى خبرتك.",
+      icon: <Target className="w-8 h-8" />,
+      color: "bg-orange-600",
+      badge: "Smart Matching"
+    },
+    {
+      title: "بورتفوليو صوتي",
+      desc: "اشرح تفكيرك الهندسي بصوتك، لتبني ثقة إنسانية فورية تتجاوز أي حواجز جغرافية.",
+      icon: <Mic className="w-8 h-8" />,
+      color: "bg-red-600",
+      badge: "Audio Vetting"
     }
   ];
 
   return (
-    <section id="features" className="py-24 bg-gray-50 px-6">
+    <section id="features" className="py-24 bg-gray-50 px-6 relative overflow-hidden">
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-indigo-200 to-transparent"></div>
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20">
-          <h2 className="text-4xl font-black text-gray-900 mb-4">لماذا يمن كودر؟</h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">حلول متكاملة مصممة خصيصاً لتناسب التحديات التي يواجهها المبدع اليمني.</p>
+          <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">حلول برمجية وطنية <br />تتجاوز الحدود</h2>
+          <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium leading-relaxed">بنينا نظاماً متكاملاً يحل معضلات الدفع، التوثيق، والتوجيه التقني، لنحول العزلة الرقمية إلى ميزة تنافسية عالمية.</p>
         </div>
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {list.map((item, i) => (
             <motion.div 
               key={i}
               whileHover={{ y: -10 }}
-              className="bg-white p-10 rounded-[2rem] shadow-sm hover:shadow-xl transition-all duration-300"
+              className="bg-white p-10 rounded-[3rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
             >
-              <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg`}>
+              <div className="absolute top-0 left-0 w-full h-1 bg-gray-100 group-hover:bg-indigo-600 transition-colors"></div>
+              <span className="text-[10px] font-black uppercase tracking-widest text-indigo-500 mb-6 block">{item.badge}</span>
+              <div className={`w-16 h-16 ${item.color} rounded-2xl flex items-center justify-center text-white mb-8 shadow-lg ring-8 ring-indigo-50/50`}>
                 {item.icon}
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-4">{item.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{item.desc}</p>
+              <h3 className="text-2xl font-black text-gray-900 mb-4">{item.title}</h3>
+              <p className="text-gray-500 font-medium leading-relaxed">{item.desc}</p>
             </motion.div>
           ))}
         </div>
@@ -248,6 +277,48 @@ const Features = () => {
     </section>
   );
 };
+
+const KafalaSection = () => (
+  <section className="py-24 px-6 bg-indigo-900 text-white overflow-hidden relative">
+    <div className="absolute top-0 right-0 w-1/2 h-full bg-indigo-800/50 -skew-x-12 translate-x-1/2"></div>
+    <div className="max-w-7xl mx-auto relative z-10 grid lg:grid-cols-2 gap-20 items-center">
+      <div className="order-2 lg:order-1">
+        <div className="inline-flex items-center gap-2 bg-indigo-800/50 px-4 py-2 rounded-full text-indigo-200 text-sm font-bold mb-8 border border-white/10">
+          <ShieldCheck className="w-4 h-4" /> ضمانة القودة اليمنية
+        </div>
+        <h2 className="text-4xl md:text-5xl font-black mb-8 leading-tight">نظام الكفيل الرقمي: <br />جسر الثقة مع العالم</h2>
+        <p className="text-xl opacity-80 mb-12 leading-relaxed font-medium">
+          العملاء الدوليون يحتاجون إلى ثقة. يمن كودر يوفر ذلك من خلال إشراف مبرمجين يمنيين خبراء يضمنون جودة العمل قبل تسليمه.
+        </p>
+        <ul className="space-y-6">
+          {[
+            "مراجعة الكود من خبراء (Kafala) في الداخل والخارج.",
+            "وساطة قانونية تضمن استلام المدفوعات الدولية.",
+            "نظام تقييم مرموق يبني سمعة المبرمج اليمني.",
+            "دفع فوري عبر محفظة 'حوِّل' المحلية بالريال."
+          ].map((item, i) => (
+            <li key={i} className="flex items-start gap-4">
+              <div className="w-6 h-6 bg-indigo-500 rounded-full flex items-center justify-center shrink-0 mt-1">
+                <CheckCircle className="w-4 h-4 text-white" />
+              </div>
+              <span className="text-lg font-bold">{item}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="order-1 lg:order-2">
+        <div className="relative group">
+          <div className="absolute -inset-4 bg-indigo-500/20 blur-3xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
+          <img 
+            src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&q=80&w=1200" 
+            alt="Cooperation" 
+            className="rounded-[3rem] shadow-2xl relative z-10 border-4 border-white/10 grayscale group-hover:grayscale-0 transition-all duration-700" 
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+);
 
 const VoiceShowcaseSection = () => (
   <section className="py-24 px-6 bg-indigo-900 text-white overflow-hidden relative">
@@ -422,6 +493,7 @@ export default function LandingPage() {
       <Navbar />
       <Hero />
       <Features />
+      <KafalaSection />
       <StatsSection />
       <DevelopersMarketplace />
       <VoiceShowcaseSection />
