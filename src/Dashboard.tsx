@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from './lib/AuthContext';
-import { ShieldCheck, Trophy, Briefcase, Star, Search, Filter, LogOut, CheckCircle, Clock, Zap, Target, Users as UsersIcon, BookOpen, MessageSquare, Mic, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Trophy, Briefcase, Star, Search, Filter, LogOut, CheckCircle, Clock, Zap, Target, Users as UsersIcon, BookOpen, MessageSquare, Mic, ArrowRight, Settings } from 'lucide-react';
 import { signOut } from './lib/firebase';
 import { Job, Profile, Challenge } from './types';
 import { motion, AnimatePresence } from 'motion/react';
+import { EditProfileModal } from './components/EditProfileModal';
+import { CreateTeamModal } from './components/CreateTeamModal';
 
 // Mock data for matched jobs (Smart Matching)
 const matchedJobs: Job[] = [
+
   {
     id: '1',
     title: 'Senior React Developer for FinTech Dashboard',
@@ -62,6 +65,10 @@ const academyChallenges: Challenge[] = [
 export default function Dashboard() {
   const { user, profile } = useAuth();
   const [activeTab, setActiveTab] = useState<'matching' | 'academy' | 'teams'>('matching');
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const points = profile?.points || 1250;
   const badges = profile?.badges || ['أول مشروع', 'سريع الاستجابة'];
@@ -71,8 +78,36 @@ export default function Dashboard() {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-indigo-900 font-bold">يرجى تسجيل الدخول</div>;
   }
 
+  const handleLogout = async () => {
+    await signOut();
+    setIsLogoutModalOpen(false);
+  };
+
+  const filteredJobs = matchedJobs.filter(job => 
+    job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    job.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
+
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans selection:bg-indigo-100" dir="rtl">
+      {/* Modals */}
+      <EditProfileModal isOpen={isEditProfileOpen} onClose={() => setIsEditProfileOpen(false)} profile={profile} />
+      <CreateTeamModal isOpen={isCreateTeamOpen} onClose={() => setIsCreateTeamOpen(false)} />
+      
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-right">
+          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl" dir="rtl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">تسجيل الخروج</h3>
+            <p className="text-gray-500 mb-6">هل أنت متأكد أنك تريد تسجيل الخروج من حسابك؟</p>
+            <div className="flex gap-3 justify-end">
+              <button onClick={() => setIsLogoutModalOpen(false)} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors">إلغاء</button>
+              <button onClick={handleLogout} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-colors">تسجيل الخروج</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Dashboard Nav */}
       <nav className="flex items-center justify-between px-6 py-4 bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
         <div className="flex items-center gap-4">
@@ -106,7 +141,7 @@ export default function Dashboard() {
             <span>{points} نقطة</span>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={signOut} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
+            <button onClick={() => setIsLogoutModalOpen(true)} className="p-2 text-gray-400 hover:text-red-500 transition-colors">
               <LogOut className="w-5 h-5" />
             </button>
           </div>
@@ -135,9 +170,16 @@ export default function Dashboard() {
                 )}
               </div>
               <h2 className="text-xl font-black text-gray-900 mb-1">{user.displayName}</h2>
-              <p className="text-sm font-bold text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full mb-6">
+              <p className="text-sm font-bold text-indigo-500 bg-indigo-50 px-3 py-1 rounded-full mb-4">
                 {profile?.role === 'sponsor' ? 'كفيل رقمي - خبير' : profile?.role === 'client' ? 'عميل دولي' : 'كودر يمني'}
               </p>
+              
+              <button 
+                onClick={() => setIsEditProfileOpen(true)}
+                className="mb-8 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 text-sm font-bold rounded-xl transition-all flex items-center gap-2 border border-gray-100"
+              >
+                <Settings className="w-4 h-4" /> تعديل الحساب
+              </button>
               
               <div className="w-full space-y-4">
                 <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
@@ -205,17 +247,28 @@ export default function Dashboard() {
                   </div>
                   <div className="flex gap-2">
                     <div className="relative">
-                      <input type="text" placeholder="بحث مخصص..." className="bg-white border border-gray-100 rounded-2xl px-6 py-3 pl-12 focus:outline-none focus:ring-4 focus:ring-indigo-50 shadow-sm w-full md:w-64" />
+                      <input 
+                        type="text" 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="بحث مخصص..." 
+                        className="bg-white border border-gray-100 rounded-2xl px-6 py-3 pl-12 focus:outline-none focus:ring-4 focus:ring-indigo-50 shadow-sm w-full md:w-64" 
+                      />
                       <Search className="w-5 h-5 text-gray-400 absolute left-4 top-3.5" />
                     </div>
                   </div>
                 </div>
 
                 <div className="grid gap-6">
-                  {matchedJobs.map(job => (
-                    <motion.div 
-                      whileHover={{ scale: 1.01 }}
-                      key={job.id} 
+                  {filteredJobs.length === 0 ? (
+                    <div className="text-center py-12 bg-white rounded-[2.5rem] border border-gray-100">
+                      <p className="text-gray-500 font-bold">لا يوجد مشاريع تطابق بحثك حالياً.</p>
+                    </div>
+                  ) : (
+                    filteredJobs.map(job => (
+                      <motion.div 
+                        whileHover={{ scale: 1.01 }}
+                        key={job.id} 
                       className={`group p-8 rounded-[2.5rem] border transition-all duration-500 relative bg-white ${job.teamRequired ? 'border-purple-100 hover:border-purple-300' : 'border-indigo-50 hover:border-indigo-200'}`}
                     >
                       <div className="absolute top-8 left-8 flex flex-col items-end gap-3 z-10">
@@ -269,7 +322,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </motion.div>
-                  ))}
+                  )))}
                 </div>
               </motion.div>
             )}
@@ -339,7 +392,10 @@ export default function Dashboard() {
                   <p className="text-gray-500 font-medium max-w-md mx-auto mb-10 leading-relaxed">
                     هذا القسم مخصص للتعاون في المشاريع الضخمة. ابحث عن فريق للانضمام إليه أو أسس فريقك لتنفيذ مشروع عملاق.
                   </p>
-                  <button className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 hover:scale-105 transition-all">
+                  <button 
+                    onClick={() => setIsCreateTeamOpen(true)}
+                    className="bg-indigo-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl shadow-indigo-100 hover:scale-105 transition-all"
+                  >
                     تأسيس فريق جديد
                   </button>
                 </div>

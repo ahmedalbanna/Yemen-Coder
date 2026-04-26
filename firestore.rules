@@ -27,6 +27,14 @@ service cloud.firestore {
              data.createdAt == request.time;
     }
 
+    function isValidTeam(data) {
+      return data.keys().hasAll(['name', 'projectDescription', 'memberUserIds', 'createdAt']) &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.projectDescription is string && data.projectDescription.size() <= 2000 &&
+             data.memberUserIds is list && data.memberUserIds.size() <= 10 &&
+             data.createdAt == request.time;
+    }
+
     function isValidJob(data) {
       return data.keys().hasAll(['id', 'title', 'description', 'budget', 'currency', 'companyName', 'postedAt', 'clientId']) &&
              data.keys().size() <= 20 &&
@@ -96,6 +104,15 @@ service cloud.firestore {
       // Transactions are system-managed or restricted
       allow list: if isOwner(resource.data.userId);
       allow create, update, delete: if false; // Should be handled via Admin/Server or specific gate
+    }
+
+    match /teams/{teamId} {
+      // Allow read if user is member
+      allow read: if isSignedIn() && request.auth.uid in resource.data.memberUserIds;
+      allow create: if isVerified() && isValidTeam(incoming()) && 
+                    isValidId(teamId) &&
+                    request.auth.uid in incoming().memberUserIds;
+      allow update: if isVerified() && request.auth.uid in resource.data.memberUserIds;
     }
   }
 }

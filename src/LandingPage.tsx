@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Mic, Globe, ShieldCheck, Wallet, PlayCircle, Star, Users, MessageSquare, ArrowLeft, ArrowRight, LogOut, User as UserIcon, LayoutDashboard, BookOpen, Target, CheckCircle } from "lucide-react";
+import { Mic, Globe, ShieldCheck, Wallet, PlayCircle, Star, Users, MessageSquare, ArrowLeft, ArrowRight, LogOut, User as UserIcon, LayoutDashboard, BookOpen, Target, CheckCircle, Briefcase } from "lucide-react";
 import { useState } from "react";
 import { VoiceRecorder } from "./components/VoiceRecorder";
 import { DeveloperCard } from "./components/DeveloperCard";
@@ -347,6 +347,59 @@ const VoiceShowcaseSection = () => (
   </section>
 );
 
+const HowItWorksSection = () => (
+  <section className="py-24 px-6 bg-white relative overflow-hidden">
+    <div className="max-w-7xl mx-auto">
+      <div className="text-center mb-20">
+        <h2 className="text-4xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">كيف يعمل يمن كودر؟</h2>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto font-medium leading-relaxed">أربع خطوات تفصلك عن فرصتك العالمية التالية.</p>
+      </div>
+      <div className="grid md:grid-cols-4 gap-8 relative">
+        <div className="hidden md:block absolute top-12 left-[10%] right-[10%] h-0.5 bg-gray-100"></div>
+        {[
+          {
+            step: "1",
+            title: "سجل ملفك وصوتك",
+            desc: "أنشئ حسابك، اذكر مهاراتك، وسجل مقطعاً صوتياً صغيراً تشرح فيه شغفك.",
+            icon: <UserIcon className="w-6 h-6 text-indigo-600" />
+          },
+          {
+            step: "2",
+            title: "احصل على الكفالة",
+            desc: "خبراء يمنيون يراجعون ملفك ويزكونك للمشاريع المناسبة لخبرتك.",
+            icon: <ShieldCheck className="w-6 h-6 text-indigo-600" />
+          },
+          {
+            step: "3",
+            title: "ابدأ العمل والتنفيذ",
+            desc: "تواصل مع العميل الدولي داخل المنصة، أو عبر فرق افتراضية مع زملائك.",
+            icon: <Briefcase className="w-6 h-6 text-indigo-600" />
+          },
+          {
+            step: "4",
+            title: "استلم أموالك محلياً",
+            desc: "يمن كودر يتولى التحصيل الدولي ويحول مستحقاتك إلى محفظتك المحلية.",
+            icon: <Wallet className="w-6 h-6 text-indigo-600" />
+          }
+        ].map((item, i) => (
+          <motion.div 
+            key={i}
+            whileHover={{ y: -10 }}
+            className="bg-white relative z-10 p-8 rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all text-center flex flex-col items-center"
+          >
+            <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-6 shadow-inner ring-4 ring-white relative">
+              <span className="absolute -top-2 -right-2 w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-xs font-black shadow-md">{item.step}</span>
+              {item.icon}
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+            <p className="text-gray-500 font-medium text-sm leading-relaxed">{item.desc}</p>
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 const DigitalSponsor = () => (
   <section className="py-24 px-6">
     <div className="max-w-7xl mx-auto rounded-[3rem] bg-indigo-50 p-12 md:p-20 flex flex-col md:flex-row items-center gap-16">
@@ -493,6 +546,7 @@ export default function LandingPage() {
       <Navbar />
       <Hero />
       <Features />
+      <HowItWorksSection />
       <KafalaSection />
       <StatsSection />
       <DevelopersMarketplace />

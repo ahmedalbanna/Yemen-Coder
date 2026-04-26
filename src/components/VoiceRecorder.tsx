@@ -1,14 +1,27 @@
-import React, { useState, useRef } from 'react';
-import { Mic, Square, Trash2, CheckCircle, Volume2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Mic, Square, Trash2, CheckCircle, Volume2, UploadCloud } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { useAuth } from '../lib/AuthContext';
+import { storage, db } from '../lib/firebase';
+import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
+import { doc, updateDoc } from 'firebase/firestore';
 
 export const VoiceRecorder: React.FC = () => {
+  const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [uploading, setUploading] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    if (recordingTime >= 60 && isRecording) {
+      stopRecording();
+    }
+  }, [recordingTime, isRecording]);
 
   const startRecording = async () => {
     try {
@@ -24,6 +37,7 @@ export const VoiceRecorder: React.FC = () => {
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/webm' });
         const url = URL.createObjectURL(blob);
+        setAudioBlob(blob);
         setAudioUrl(url);
         stream.getTracks().forEach((track) => track.stop());
       };
@@ -49,8 +63,30 @@ export const VoiceRecorder: React.FC = () => {
   };
 
   const deleteRecording = () => {
+    if (audioUrl) URL.revokeObjectURL(audioUrl);
     setAudioUrl(null);
+    setAudioBlob(null);
     setRecordingTime(0);
+  };
+
+  const handleUpload = async () => {
+    if (!user || !audioBlob) return;
+    try {
+      setUploading(true);
+      const storageRef = ref(storage, `voice_portfolios/${user.uid}.webm`);
+      const uploadTask = await uploadBytesResumable(storageRef, audioBlob);
+      const downloadURL = await getDownloadURL(uploadTask.ref);
+
+      await updateDoc(doc(db, 'profiles', user.uid), {
+        audioPortfolioUrl: downloadURL
+      });
+      alert('تم حفظ مقطعك الصوتي بنجاح!');
+    } catch (error) {
+      console.error('Upload Error', error);
+      alert('فشل في رفع المقطع. حاول مجدداً.');
+    } finally {
+      setUploading(false);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -113,16 +149,23 @@ export const VoiceRecorder: React.FC = () => {
               <div className="flex gap-4 w-full">
                 <button
                   onClick={deleteRecording}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all"
+                  disabled={uploading}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border-2 border-gray-100 text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-all disabled:opacity-50"
                 >
                   <Trash2 className="w-5 h-5" />
                   حذف
                 </button>
                 <button
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100"
+                  onClick={handleUpload}
+                  disabled={uploading || !user}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-all shadow-lg shadow-indigo-100 disabled:opacity-50"
                 >
-                  <CheckCircle className="w-5 h-5" />
-                  حفظ
+                  {uploading ? (
+                    <UploadCloud className="w-5 h-5 animate-bounce" />
+                  ) : (
+                    <CheckCircle className="w-5 h-5" />
+                  )}
+                  {uploading ? 'جاري الحفظ...' : 'حفظ ونشر'}
                 </button>
               </div>
             </motion.div>
