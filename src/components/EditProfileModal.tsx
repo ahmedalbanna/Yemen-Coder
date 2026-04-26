@@ -22,6 +22,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
     skills: profile?.skills?.join(', ') || '',
     experienceLevel: profile?.experienceLevel || 'mid',
   });
+  const [isConfirming, setIsConfirming] = useState(false);
 
   if (!isOpen) return null;
 
@@ -42,6 +43,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
         skills: skillsArray,
         experienceLevel: formData.experienceLevel,
       });
+      setIsConfirming(false);
       onClose();
     } catch (err) {
       console.error(err);
@@ -53,6 +55,21 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      {isConfirming && (
+        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 text-right">
+          <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl" dir="rtl">
+            <h3 className="text-xl font-bold text-gray-900 mb-2">تأكيد حفظ التعديلات</h3>
+            <p className="text-gray-500 mb-6">هل أنت متأكد من حفظ هذه البيانات في ملفك الشخصي؟</p>
+            <div className="flex gap-3 justify-end">
+              <button disabled={loading} onClick={() => setIsConfirming(false)} className="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors">إلغاء</button>
+              <button disabled={loading} onClick={handleSave} className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition-colors">
+                {loading ? 'جاري الحفظ...' : 'تأكيد الحفظ'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -141,11 +158,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({ isOpen, onCl
             إلغاء
           </button>
           <button
-            onClick={handleSave}
-            disabled={loading}
-            className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+            onClick={() => setIsConfirming(true)}
+            className="px-6 py-2 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-700 transition-colors flex items-center gap-2"
           >
-            {loading ? 'جاري الحفظ...' : <><Save className="w-4 h-4" /> حفظ التعديلات</>}
+            <Save className="w-4 h-4" /> حفظ التعديلات
           </button>
         </div>
       </motion.div>

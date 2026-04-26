@@ -44,6 +44,12 @@ const Navbar = () => {
               <LayoutDashboard className="w-4 h-4" />
               لوحة التحكم
             </button>
+            <button 
+              onClick={() => navigate('/dashboard?edit=true')}
+              className="hidden md:flex px-4 py-2 border border-gray-200 text-gray-700 font-bold rounded-lg items-center gap-2 hover:bg-gray-50 transition-colors"
+            >
+              تعديل الحساب
+            </button>
           </div>
         ) : (
           <>
@@ -446,6 +452,75 @@ const DigitalSponsor = () => (
   </section>
 );
 
+const PastProjectsSection = () => (
+  <section className="py-24 px-6 bg-gray-50">
+    <div className="max-w-7xl mx-auto">
+      <div className="text-center mb-16">
+        <h2 className="text-4xl font-black text-gray-900 mb-4">نماذج أعمال ناجحة</h2>
+        <p className="text-xl text-gray-600 mb-10 leading-relaxed max-w-2xl mx-auto">
+          مشاريع حقيقية تم إنجازها بواسطة مبرمجين يمنيين للعملاء حول العالم عبر منصتنا.
+        </p>
+      </div>
+      
+      <div className="grid md:grid-cols-2 gap-8">
+        <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group">
+          <div className="h-64 overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=800" alt="Dashboard Dashboard" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div className="absolute bottom-4 right-4 flex gap-2">
+              <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">تطبيق ويب</span>
+              <span className="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">منتهي</span>
+            </div>
+          </div>
+          <div className="p-8">
+            <h3 className="text-2xl font-black text-gray-900 mb-3">لوحة تحكم FinTech لشركة سعودية</h3>
+            <p className="text-gray-600 mb-4 font-medium leading-relaxed">
+              تم تطوير لوحة تحكم متكاملة تدعم تحليل البيانات المالية في الوقت الفعلي باستخدام React و Tailwind، مع ربط معمارية Backend معقدة.
+            </p>
+            <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+              <img src="https://i.pravatar.cc/150?u=dev1" alt="developer" className="w-10 h-10 rounded-full" />
+              <div>
+                <p className="font-bold text-sm text-gray-900">محمد أحمد</p>
+                <p className="text-xs text-gray-500">مطور واجهات أمامية</p>
+              </div>
+              <div className="mr-auto font-black text-indigo-600">$3,500</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-[2rem] overflow-hidden shadow-sm hover:shadow-xl transition-all border border-gray-100 group">
+          <div className="h-64 overflow-hidden relative">
+            <img src="https://images.unsplash.com/photo-1621360841013-c76831f12560?auto=format&fit=crop&q=80&w=800" alt="Mobile App" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+            <div className="absolute bottom-4 right-4 flex gap-2">
+              <span className="bg-indigo-600 text-white text-xs font-bold px-3 py-1 rounded-full">تطبيق جوال</span>
+              <span className="bg-white/20 backdrop-blur-md text-white text-xs font-bold px-3 py-1 rounded-full border border-white/20">منتهي</span>
+            </div>
+          </div>
+          <div className="p-8">
+            <h3 className="text-2xl font-black text-gray-900 mb-3">تطبيق لوجستي إماراتي</h3>
+            <p className="text-gray-600 mb-4 font-medium leading-relaxed">
+              تطبيق تتبع شحنات مبني بـ Flutter لشركة لوجستية ناشئة في دبي، شمل العمل من قبل 3 مبرمجين (فريق افتراضي) لإنجازه في شهرين.
+            </p>
+            <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
+              <div className="flex -space-x-2 space-x-reverse">
+                <img src="https://i.pravatar.cc/150?u=dev2" alt="dev" className="w-10 h-10 rounded-full border-2 border-white" />
+                <img src="https://i.pravatar.cc/150?u=dev3" alt="dev" className="w-10 h-10 rounded-full border-2 border-white" />
+                <img src="https://i.pravatar.cc/150?u=dev4" alt="dev" className="w-10 h-10 rounded-full border-2 border-white" />
+              </div>
+              <div>
+                <p className="font-bold text-sm text-gray-900">فريق رواد التقنية</p>
+                <p className="text-xs text-gray-500">فريق افتراضي</p>
+              </div>
+              <div className="mr-auto font-black text-indigo-600">$8,000</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 const Footer = () => (
   <footer className="bg-gray-900 text-white py-20 px-6 border-t border-white/5">
     <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-12 text-center md:text-right">
@@ -549,6 +624,7 @@ export default function LandingPage() {
       <HowItWorksSection />
       <KafalaSection />
       <StatsSection />
+      <PastProjectsSection />
       <DevelopersMarketplace />
       <VoiceShowcaseSection />
       <DigitalSponsor />

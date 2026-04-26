@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from './lib/AuthContext';
-import { ShieldCheck, Trophy, Briefcase, Star, Search, Filter, LogOut, CheckCircle, Clock, Zap, Target, Users as UsersIcon, BookOpen, MessageSquare, Mic, ArrowRight, Settings } from 'lucide-react';
+import { ShieldCheck, Trophy, Briefcase, Star, Search, Filter, LogOut, CheckCircle, Clock, Zap, Target, Users as UsersIcon, BookOpen, MessageSquare, Mic, ArrowRight, Settings, Wallet } from 'lucide-react';
 import { signOut } from './lib/firebase';
 import { Job, Profile, Challenge } from './types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -64,15 +64,16 @@ const academyChallenges: Challenge[] = [
 
 export default function Dashboard() {
   const { user, profile } = useAuth();
-  const [activeTab, setActiveTab] = useState<'matching' | 'academy' | 'teams'>('matching');
+  const [activeTab, setActiveTab] = useState<'matching' | 'academy' | 'teams' | 'payments'>('matching');
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [sortOption, setSortOption] = useState<'date-desc' | 'date-asc' | 'budget-desc' | 'budget-asc' | ''>('');
+  const [filterExperience, setFilterExperience] = useState<string>('');
 
   const points = profile?.points || 1250;
   const badges = profile?.badges || ['أول مشروع', 'سريع الاستجابة'];
-  const experienceLevel = profile?.experienceLevel || 'mid';
 
   if (!user) {
     return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-indigo-900 font-bold">يرجى تسجيل الدخول</div>;
@@ -83,11 +84,48 @@ export default function Dashboard() {
     setIsLogoutModalOpen(false);
   };
 
-  const filteredJobs = matchedJobs.filter(job => 
-    job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    job.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const calculateProfileCompletion = () => {
+    if (!profile) return 20;
+    let score = 20;
+    if (profile.name) score += 20;
+    if (profile.bio) score += 20;
+    if (profile.location) score += 20;
+    if (profile.skills && profile.skills.length > 0) score += 10;
+    if (profile.experienceLevel) score += 10;
+    return score;
+  };
+  
+  const completionPercentage = calculateProfileCompletion();
+
+  const getMissingFields = () => {
+    if (!profile) return ['تحديث الملف الشخصي'];
+    const missing = [];
+    if (!profile.bio) missing.push('النبذة');
+    if (!profile.location) missing.push('الموقع');
+    if (!profile.skills || profile.skills.length === 0) missing.push('المهارات');
+    if (!profile.experienceLevel) missing.push('مستوى الخبرة');
+    return missing;
+  };
+
+  const missingFields = getMissingFields();
+
+  let displayJobs = matchedJobs.filter(job => {
+    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          job.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          job.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesExperience = filterExperience ? job.requiredExperienceLevel === filterExperience : true;
+    return matchesSearch && matchesExperience;
+  });
+
+  if (sortOption === 'budget-desc') {
+    displayJobs.sort((a, b) => b.budget - a.budget);
+  } else if (sortOption === 'budget-asc') {
+    displayJobs.sort((a, b) => a.budget - b.budget);
+  } else if (sortOption === 'date-desc') {
+    displayJobs.sort((a, b) => b.postedAt - a.postedAt);
+  } else if (sortOption === 'date-asc') {
+    displayJobs.sort((a, b) => a.postedAt - b.postedAt);
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col font-sans selection:bg-indigo-100" dir="rtl">
@@ -123,6 +161,7 @@ export default function Dashboard() {
             { id: 'matching', label: 'المطابقة الذكية', icon: <Target className="w-4 h-4" /> },
             { id: 'academy', label: 'الأكاديمية', icon: <BookOpen className="w-4 h-4" /> },
             { id: 'teams', label: 'الفرق الافتراضية', icon: <UsersIcon className="w-4 h-4" /> },
+            { id: 'payments', label: 'المدفوعات המجدولة', icon: <Wallet className="w-4 h-4" /> },
           ].map(tab => (
             <button
               key={tab.id}
@@ -184,15 +223,21 @@ export default function Dashboard() {
               <div className="w-full space-y-4">
                 <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
                   <span>مستوى التقدم</span>
-                  <span className="text-indigo-600">65%</span>
+                  <span className="text-indigo-600">{completionPercentage}%</span>
                 </div>
                 <div className="w-full bg-gray-50 rounded-full h-2 overflow-hidden border border-gray-100">
                   <motion.div 
                     initial={{ width: 0 }}
-                    animate={{ width: '65%' }}
+                    animate={{ width: `${completionPercentage}%` }}
                     className="bg-indigo-600 h-full rounded-full shadow-sm"
                   />
                 </div>
+                {missingFields.length > 0 && (
+                  <div className="text-xs text-right text-gray-500 bg-orange-50 p-3 rounded-xl border border-orange-100">
+                    <span className="font-bold text-orange-700 block mb-1">أكمل ملفك للحصول على فرص أكثر:</span>
+                    {missingFields.join('، ')}
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4 w-full mt-8">
@@ -245,31 +290,56 @@ export default function Dashboard() {
                     <h2 className="text-3xl font-black text-gray-900 mb-2">محرك المطابقة الذكي</h2>
                     <p className="text-gray-500 font-medium">مشاريع منقحة حسب مهاراتك ونظام "الكفالة الرقمية".</p>
                   </div>
-                  <div className="flex gap-2">
-                    <div className="relative">
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <div className="relative flex-grow">
                       <input 
                         type="text" 
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="بحث مخصص..." 
-                        className="bg-white border border-gray-100 rounded-2xl px-6 py-3 pl-12 focus:outline-none focus:ring-4 focus:ring-indigo-50 shadow-sm w-full md:w-64" 
+                        className="bg-white border border-gray-100 rounded-2xl px-6 py-3 pl-12 focus:outline-none focus:ring-4 focus:ring-indigo-50 shadow-sm w-full" 
                       />
                       <Search className="w-5 h-5 text-gray-400 absolute left-4 top-3.5" />
                     </div>
+                    
+                    <select
+                      value={filterExperience}
+                      onChange={(e) => setFilterExperience(e.target.value)}
+                      className="bg-white border border-gray-100 rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-indigo-50 shadow-sm text-gray-700 font-bold"
+                    >
+                      <option value="">جميع المستويات</option>
+                      <option value="junior">مبتدئ (Junior)</option>
+                      <option value="mid">متوسط (Mid)</option>
+                      <option value="senior">خبير (Senior)</option>
+                      <option value="expert">مستشار (Expert)</option>
+                    </select>
+
+                    <select
+                      value={sortOption}
+                      onChange={(e) => setSortOption(e.target.value as any)}
+                      className="bg-white border border-gray-100 rounded-2xl px-4 py-3 focus:outline-none focus:ring-4 focus:ring-indigo-50 shadow-sm text-gray-700 font-bold"
+                    >
+                      <option value="">ترتيب حسب...</option>
+                      <option value="date-desc">الأحدث أولاً</option>
+                      <option value="date-asc">الأقدم أولاً</option>
+                      <option value="budget-desc">الميزانية: من الأعلى للأقل</option>
+                      <option value="budget-asc">الميزانية: من الأقل للأعلى</option>
+                    </select>
                   </div>
                 </div>
 
                 <div className="grid gap-6">
-                  {filteredJobs.length === 0 ? (
+                  {displayJobs.length === 0 ? (
                     <div className="text-center py-12 bg-white rounded-[2.5rem] border border-gray-100">
                       <p className="text-gray-500 font-bold">لا يوجد مشاريع تطابق بحثك حالياً.</p>
                     </div>
                   ) : (
-                    filteredJobs.map(job => (
+                    displayJobs.map(job => (
                       <motion.div 
                         whileHover={{ scale: 1.01 }}
                         key={job.id} 
-                      className={`group p-8 rounded-[2.5rem] border transition-all duration-500 relative bg-white ${job.teamRequired ? 'border-purple-100 hover:border-purple-300' : 'border-indigo-50 hover:border-indigo-200'}`}
+                      className={`group p-8 rounded-[2.5rem] border transition-all duration-500 relative bg-white cursor-pointer ${job.teamRequired ? 'border-purple-100 hover:border-purple-300' : 'border-indigo-50 hover:border-indigo-200'}`}
+                      onClick={() => window.location.href = `/jobs/${job.id}`}
                     >
                       <div className="absolute top-8 left-8 flex flex-col items-end gap-3 z-10">
                         <div className="bg-green-50 text-green-600 px-5 py-2 text-xl font-black rounded-2xl border border-green-100 shadow-sm">
@@ -398,6 +468,67 @@ export default function Dashboard() {
                   >
                     تأسيس فريق جديد
                   </button>
+                </div>
+              </motion.div>
+            )}
+            {activeTab === 'payments' && (
+              <motion.div 
+                key="payments"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="space-y-8"
+              >
+                <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-sm">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 bg-green-50 text-green-600 rounded-2xl flex items-center justify-center">
+                      <Wallet className="w-8 h-8" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black text-gray-900 mb-1">المدفوعات المجدولة</h2>
+                      <p className="text-gray-500 font-medium">إدارة ومتابعة الدفعات المالية للمشاريع.</p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4">
+                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                      <div>
+                        <h4 className="text-lg font-black text-gray-900 mb-1">تطبيق لوجستي - الدفعة الأولى</h4>
+                        <p className="text-sm text-gray-500">مستحقة بعد استلام التصميم المبدئي</p>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-gray-400 mb-1">تاريخ الاستحقاق</p>
+                          <p className="font-bold text-gray-900">15 مايو 2026</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-gray-400 mb-1">المبلغ</p>
+                          <p className="font-black text-2xl text-green-600">$1,500</p>
+                        </div>
+                        <button className="px-6 py-2 bg-white text-indigo-600 font-bold rounded-xl border border-indigo-100 hover:bg-indigo-50">
+                          التفاصيل
+                        </button>
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100 flex flex-col md:flex-row justify-between md:items-center gap-4 opacity-75">
+                      <div>
+                        <h4 className="text-lg font-black text-gray-900 mb-1">موقع تعريفي - الدفعة النهائية</h4>
+                        <p className="text-sm text-gray-500">تم التسليم بنجاح</p>
+                      </div>
+                      <div className="flex items-center gap-6">
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-gray-400 mb-1">تاريخ الاستحقاق</p>
+                          <p className="font-bold text-gray-900">1 مايو 2026</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-gray-400 mb-1">المبلغ</p>
+                          <p className="font-black text-2xl text-gray-600">$800</p>
+                        </div>
+                        <span className="px-4 py-2 bg-green-100 text-green-700 font-bold rounded-xl">
+                          مكتمل ✅
+                        </span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </motion.div>
             )}

@@ -7,6 +7,7 @@ import { StrictMode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LandingPage from './LandingPage.tsx';
 import Dashboard from './Dashboard';
+import JobDetails from './JobDetails';
 import { AuthProvider, useAuth } from './lib/AuthContext';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -25,6 +26,11 @@ export default function App() {
           <Route path="/dashboard" element={
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/jobs/:id" element={
+            <ProtectedRoute>
+              <JobDetails />
             </ProtectedRoute>
           } />
         </Routes>
