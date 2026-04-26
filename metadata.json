@@ -1,0 +1,6 @@
+{
+  "name": "يمن كودر - Yemen Coder",
+  "description": "منصة لتمكين المبرمجين والمبدعين اليمنيين وربطهم بسوق العمل العالمي وتسهيل استلام مدفوعاتهم.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": []
+}

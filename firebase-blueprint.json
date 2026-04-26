@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "Profile": {
+      "title": "Profile",
+      "description": "User profile data for developers, sponsors, and clients.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["developer", "sponsor", "client"] },
+        "avatarUrl": { "type": "string" },
+        "bio": { "type": "string" },
+        "location": { "type": "string" },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "voiceUrl": { "type": "string" },
+        "isVouched": { "type": "boolean" },
+        "rating": { "type": "number" },
+        "vouchCount": { "type": "number" },
+        "totalEarnings": { "type": "number" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "name", "email", "role", "isVouched", "rating", "createdAt"]
+    },
+    "Job": {
+      "title": "Job",
+      "description": "Job/Project postings.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "budget": { "type": "number" },
+        "currency": { "type": "string" },
+        "companyName": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "postedAt": { "type": "number" },
+        "clientId": { "type": "string" }
+      },
+      "required": ["id", "title", "description", "budget", "currency", "companyName", "postedAt", "clientId"]
+    },
+    "Vouch": {
+      "title": "Vouch",
+      "description": "Endorsements/Vouches from sponsors to developers.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "fromSponsorId": { "type": "string" },
+        "toDeveloperId": { "type": "string" },
+        "comment": { "type": "string" },
+        "rating": { "type": "number" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "fromSponsorId", "toDeveloperId", "rating", "createdAt"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Payment records.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "amount": { "type": "number" },
+        "currency": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed", "failed"] },
+        "method": { "type": "string", "enum": ["Hawal", "Bank", "Crypto"] },
+        "reference": { "type": "string" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["id", "userId", "amount", "currency", "status", "method", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/profiles/{userId}": {
+      "schema": "Profile",
+      "description": "Stores user profile information."
+    },
+    "/jobs/{jobId}": {
+      "schema": "Job",
+      "description": "Stores open job postings."
+    },
+    "/vouches/{vouchId}": {
+      "schema": "Vouch",
+      "description": "Stores professional endorsements."
+    },
+    "/transactions/{txnId}": {
+      "schema": "Transaction",
+      "description": "Stores payment history."
+    }
+  }
+}
